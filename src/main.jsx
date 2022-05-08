@@ -9,8 +9,8 @@ const Home = React.lazy(() => import("./pages/home"));
 const Login = React.lazy(() => import("./pages/login"));
 const Register = React.lazy(() => import("./pages/register"));
 
-function auth(){
-  return localStorage.getItem("token") != null;
+function isLoggedIn(){
+  return localStorage.getItem("token") != null
 }
 
 // fallback doc : https://17.reactjs.org/docs/concurrent-mode-suspense.html
@@ -19,26 +19,27 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={ 
-          (auth) ? 
+          (localStorage.getItem("token") != null) ?
           ( <React.Suspense fallback={<>...</>}>
             <Home />
-          </React.Suspense> ) : (<Navigate to="/login" replace />)
+          </React.Suspense> ) : (<Navigate to="/login" />)
         }  >
         </Route>
         <Route path="/login" element={
-          (!auth) ?
+          (localStorage.getItem("token") == null) ?
           ( <React.Suspense fallback={<>...</>}>
             <Login />
-          </React.Suspense> ) : (<Navigate to="/" replace />)
+          </React.Suspense> ) : (<Navigate to="/" />)
         } > 
         </Route>
         <Route path="/register" element={
-          (!auth) ?
+          (localStorage.getItem("token") == null) ?
           ( <React.Suspense fallback={<>...</>}>
             <Register />
-          </React.Suspense> ) : (<Navigate to="/" replace />)}>
+          </React.Suspense> ) : (<Navigate to="/" />)}>
         </Route>
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
 )
+
