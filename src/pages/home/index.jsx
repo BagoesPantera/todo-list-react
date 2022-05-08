@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { TrashIcon, PencilIcon, LogoutIcon } from "@heroicons/react/solid";
 import apiFetch from "../../api/api";
 
 export default function Home() {
@@ -8,6 +7,9 @@ export default function Home() {
   const [tasks, setTasks] = useState([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
+  const [updateId, setUpdateId] = useState("");
+  const [updateTaskTitle, setUpdateTaskTitle] = useState("");
+  const [updateTaskDescription, setUpdateTaskDescription] = useState("");
   const [showModal, setShowModal] = useState(false);
 
   async function displayTodo() {
@@ -23,12 +25,29 @@ export default function Home() {
       console.log(error);
     }   
   }
-// displayTodo();
+
   useEffect(() => {
 
     displayTodo();
 
   }, []);
+
+  async function oneTodo(id) {
+    setShowModal(true);
+    try {
+      const response = await apiFetch("/todo/" + id, {
+        method: "GET",
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      });
+      setUpdateTaskTitle(response.title);
+      setUpdateTaskDescription(response.description);
+      setUpdateId(response.id);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   async function addTodo(e) {
     e.preventDefault();
@@ -53,6 +72,29 @@ export default function Home() {
     }
   }
 
+  async function updateTodo(e, id) {
+    e.preventDefault();
+    try {
+      const response = await apiFetch(`/todo/update/${id}`, {
+        method: "POST",
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+        body: {
+          title: updateTaskTitle,
+          description: updateTaskDescription,
+        },
+      });
+      console.log(response);
+      setUpdateTaskTitle("");
+      setUpdateTaskDescription("");
+      setShowModal(false);
+      displayTodo();
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   async function deleteTodo(id) {
     try {
       const response = await apiFetch(`/todo/delete/${id}`, {
@@ -67,9 +109,17 @@ export default function Home() {
     }
   }
 
-//console.log(tasks);
+  function handleCloseModalUpdate() {
+    setShowModal(false);
+    setUpdateId("");
+    setUpdateTaskTitle("");
+    setUpdateTaskDescription("");
+  }
 
-
+  function handleLogout() {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  }
   return (
     <div className="h-100 w-full flex flex-col h-screen items-center bg-neutral-100 font-sans">
       <div className="bg-white rounded shadow p-6 m-4 w-full lg:w-3/4 lg:max-w-lg">
@@ -92,7 +142,7 @@ export default function Home() {
                     <p className="w-full text-grey-darkest">{task.description}</p>
                   </div>
                    
-                    <button className="flex-no-shrink p-2 ml-4 mr-2 border-2 rounded hover:text-white text-green border-green-600 hover:bg-green-600" onClick={() => setShowModal(true)}>Edit</button>
+                    <button className="flex-no-shrink p-2 ml-4 mr-2 border-2 rounded hover:text-white text-green border-green-600 hover:bg-green-600" onClick={() => oneTodo(task.id)}>Edit</button>
                     <button className="flex-no-shrink p-2 ml-2 border-2 rounded text-red border-red-600 hover:text-white hover:bg-red-600" onClick={() => deleteTodo(task.id)}>Remove</button>
                 </div>
                 ))}
@@ -122,38 +172,43 @@ export default function Home() {
                   </button>
                 </div>
                 {/*body*/}
-                <div className="relative p-6 ">
-                  <form className="flex mt-4 flex-col ">
-                    <input className="shadow appearance-none border rounded w-full py-2 px-3 mr-4 text-grey-darker" placeholder="Add Todo" value={newTaskTitle} onChange={e => setNewTaskTitle( e.target.value)}/>
-                    <textarea className="shadow appearance-none border rounded w-full py-2 px-3 mr-4 mt-3 text-grey-darker" name="" id="" cols="20" rows="4" placeholder="Description" value={newTaskDescription} onChange={e => setNewTaskDescription(e.target.value)}/>
+                <form className="flex mt-4 flex-col " onSubmit={e => updateTodo(e, updateId)}>
+                  <div className="relative p-6 ">
                     
-                    <button type="submit" className="flex-no-shrink p-2 w-full mt-3 border-2 mr-4 rounded text-teal border-teal-600 hover:text-white hover:bg-teal-600">Add</button>
+                      <input className="shadow appearance-none border rounded w-full py-2 px-3 mr-4 text-grey-darker" placeholder="Add Todo" value={updateTaskTitle} onChange={e => setUpdateTaskTitle( e.target.value)}/>
+                      <textarea className="shadow appearance-none border rounded w-full py-2 px-3 mr-4 mt-3 text-grey-darker" name="" id="" cols="20" rows="4" placeholder="Description" value={updateTaskDescription} onChange={e => setUpdateTaskDescription(e.target.value)}/>
+                  
+                  </div>
+                  {/*footer*/}
+                  <div className="flex items-center justify-end p-6 border-t border-solid border-slate-200 rounded-b">
+                    <button
+                      className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                      type="button"
+                      onClick={handleCloseModalUpdate}
+                    >
+                      Close
+                    </button>
+                    <button
+                      className="bg-emerald-500 text-white active:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                      type="submit"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
                 </form>
-                </div>
-                {/*footer*/}
-                <div className="flex items-center justify-end p-6 border-t border-solid border-slate-200 rounded-b">
-                  <button
-                    className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                    type="button"
-                    onClick={() => setShowModal(false)}
-                  >
-                    Close
-                  </button>
-                  <button
-                    className="bg-emerald-500 text-white active:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                    type="submit"
-                    onClick={() => setShowModal(false)}
-                  >
-                    Save Changes
-                  </button>
-                </div>
               </div>
             </div>
           </div>
           <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
         </>
       ) : null}
+      {/* Left */}
       
+        </div>
+        <div class="absolute top-2 right-2 h-16 w-200">
+          <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={handleLogout}>
+            Logout
+          </button>
         </div>
     </div>
   );

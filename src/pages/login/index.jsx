@@ -24,7 +24,7 @@ export default function Login() {
             });
             localStorage.setItem("token", response.token);
             setLoading(false);
-            navigate("/", { replace: true });
+            window.location.href = "/";
         } catch (err) {
             setLoading(false);
             setError("Invalid email or password");
