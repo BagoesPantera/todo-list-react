@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import apiFetch from "../../api/api";
+import { useContext } from "react";
+import AuthContext from "../../AuthProvider";
 
 export default function Login() {
-    const navigate = useNavigate();
+
+    const { onLogin } = useContext(AuthContext);
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -21,9 +24,8 @@ export default function Login() {
                     password,
                 },
             });
-            localStorage.setItem("token", response.token);
             setLoading(false);
-            window.location.href = "/";
+            onLogin(response.token);
         } catch (err) {
             setLoading(false);
             setError("Invalid email or password");

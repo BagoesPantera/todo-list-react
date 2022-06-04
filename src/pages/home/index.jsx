@@ -1,8 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import apiFetch from "../../api/api";
+import AuthContext from "../../AuthProvider";
 
 export default function Home() {
   
+  const {onLogout} = useContext(AuthContext);
+
   const [tasks, setTasks] = useState([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
@@ -32,7 +35,7 @@ export default function Home() {
   }, []);
 
   async function oneTodo(id) {
-    setShowModal(true);
+    
     try {
       const response = await apiFetch("/todo/" + id, {
         method: "GET",
@@ -40,6 +43,7 @@ export default function Home() {
           Authorization: localStorage.getItem("token"),
         },
       });
+      setShowModal(true);
       setUpdateTaskTitle(response.title);
       setUpdateTaskDescription(response.description);
       setUpdateId(response.id);
@@ -115,10 +119,6 @@ export default function Home() {
     setUpdateTaskDescription("");
   }
 
-  function handleLogout() {
-    localStorage.removeItem("token");
-    window.location.href = "/login";
-  }
   return (
     <div className="h-100 w-full flex flex-col h-screen items-center bg-neutral-100 font-sans">
       <div className="bg-white rounded shadow p-6 m-4 w-full lg:w-3/4 lg:max-w-lg">
@@ -204,8 +204,8 @@ export default function Home() {
       {/* Left */}
       
         </div>
-        <div class="absolute top-2 right-2 h-16 w-200">
-          <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={handleLogout}>
+        <div className="absolute top-2 right-2 h-16 w-200">
+          <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={onLogout}>
             Logout
           </button>
         </div>

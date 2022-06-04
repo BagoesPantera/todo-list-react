@@ -1,17 +1,15 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import {BrowserRouter, Routes, Route, Navigate} from "react-router-dom";
+import {BrowserRouter, Routes, Route} from "react-router-dom";
 import App from './App'
+import { AuthProvider } from './AuthProvider';
 import './index.css'
+import { ProtectedLogin, ProtectedRoute } from './ProtectedRoute';
 
 //route
 const Home = React.lazy(() => import("./pages/home"));
 const Login = React.lazy(() => import("./pages/login"));
 const Register = React.lazy(() => import("./pages/register"));
-
-function isLoggedIn(){
-  return localStorage.getItem("token") != null
-}
 
 function loading(){
   return (
@@ -29,28 +27,35 @@ function loading(){
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={ 
-          (isLoggedIn()) ?
-          ( <React.Suspense fallback={loading()}>
-            <Home />
-          </React.Suspense> ) : (<Navigate to="/login" />)
-        }  >
-        </Route>
-        <Route path="/login" element={
-          (!isLoggedIn()) ?
-          ( <React.Suspense fallback={loading()}>
-            <Login />
-          </React.Suspense> ) : (<Navigate to="/" />)
-        } > 
-        </Route>
-        <Route path="/register" element={
-          (!isLoggedIn()) ?
-          ( <React.Suspense fallback={loading()}>
-            <Register />
-          </React.Suspense> ) : (<Navigate to="/" />)}>
-        </Route>
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={ 
+            <ProtectedRoute>
+              <React.Suspense fallback={loading()}>
+                <Home />
+              </React.Suspense>     
+            </ProtectedRoute>
+          }  >
+          </Route>
+          <Route path="/login" element={
+            <ProtectedLogin>
+              <React.Suspense fallback={loading()}>
+                <Login />
+              </React.Suspense>
+            </ProtectedLogin>
+            
+          } > 
+          </Route>
+          <Route path="/register" element={
+            <ProtectedLogin>
+              <React.Suspense fallback={loading()}>
+                <Register />
+              </React.Suspense>
+            </ProtectedLogin>
+            } >
+          </Route>
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 )
