@@ -2,21 +2,27 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
-import { login } from "../../actions/authAction";
+// actions
+import { login, clearError } from "../../actions/authAction";
+
+// entities
+import { swalLoading, swalAlertAuth, swalClose } from "../../entities/swal.entity";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { error } = useSelector(state => state.auth);
+  const { error, loading } = useSelector(state => state.auth);
   
   const dispatch = useDispatch();
   
   useEffect( () => {
-      if (error) {
-          alert(error);
-      }
-  }, [error]);
+    loading ? swalLoading() : swalClose();
+
+    if (error) {
+      swalAlertAuth("error", error, dispatch, clearError);
+    }
+  }, [error, loading]);
 
   const handleLogin = (e) => {
     e.preventDefault();

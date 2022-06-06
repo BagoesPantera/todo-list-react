@@ -197,7 +197,6 @@ export const updateTodo = (id, title, description) => {
               },
             });
             getTodo()(dispatch);
-            console.log("resp update", response);
             dispatch({
                 type: 'UPDATE_TODO',
                 payload: {

@@ -9,6 +9,9 @@ import { logout } from "../../actions/authAction";
 import TodoList from "../../components/todoList";
 import UpdateModal from "../../components/updateModal";
 
+// entities
+import { swalLoading, swalAlert, swalClose } from "../../entities/swal.entity";
+
 export default function Home() {
 
   const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -17,37 +20,32 @@ export default function Home() {
 
   // reducers state
   const { token } = useSelector(state => state.auth);
-  const { response, error, oneTodo } = useSelector(state => state.todo);
+  const { response, error, oneTodo, loading } = useSelector(state => state.todo);
 
   const dispatch = useDispatch();
 
   useEffect(() => {
 
-    if(oneTodo){
-      setShowModal(true);
-    }
+    oneTodo ? setShowModal(true) : setShowModal(false);
 
     if(response) {
       handleClear();
-
-      // adding this causing "Should not already be working." error.
-      //alert(response)
+      swalAlert("info", response)
     }
+
+    loading ? swalLoading() : swalClose();
 
     if(error) {
-      alert(error);
+      swalAlert("error", error)
+      handleClear();
     }
 
-  }, [token, response, error, oneTodo]);
+  }, [token, response, error, oneTodo, loading]);
 
   const handleAddTodo = (e) => {
     e.preventDefault();
 
     dispatch(addTodo(newTaskTitle, newTaskDescription));
-  }
-
-  const handleLogout = () => {
-    dispatch(logout())
   }
 
   const handleClear = () => {
@@ -74,10 +72,10 @@ export default function Home() {
         <div className="divide-y mt-4">
           <TodoList></TodoList>
         </div>
-        {showModal ? UpdateModal : null}
+        {showModal ? <UpdateModal></UpdateModal> : null}
       </div>
       <div className="absolute top-2 right-2 h-16 w-200">
-        <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={() => handleLogout()}>
+        <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={() => dispatch(logout())}>
           Logout
         </button>
       </div>

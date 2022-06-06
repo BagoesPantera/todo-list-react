@@ -2,7 +2,11 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
-import { register } from "../../actions/authAction";
+// actions
+import { register, clearError } from "../../actions/authAction";
+
+// entities
+import { swalLoading, swalAlertAuth, swalClose } from "../../entities/swal.entity";
 
 export default function Register() {
 
@@ -11,20 +15,23 @@ export default function Register() {
   const [passwordData, setPasswordData] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const { error } = useSelector(state => state.auth);
+  const { error, loading } = useSelector(state => state.auth);
 
   const dispatch = useDispatch();
+
+  useEffect( () => {
+    loading ? swalLoading() : swalClose();
+
+    if (error) {
+      swalAlertAuth("error", error, dispatch, clearError);
+    }
+  }, [ error, loading]);
 
   const handleRegister = (e) => {
     e.preventDefault();
 
     dispatch(register(nameData, emailData, passwordData, confirmPassword));
   }
-  useEffect( () => {
-    if (error) {
-        alert(error);
-    }
-  }, [ error]);
 
   return (
     <div className="flex flex-col h-screen items-center justify-center py-12 px-4 sm:px-6 lg:px-8">

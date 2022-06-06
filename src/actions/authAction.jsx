@@ -1,4 +1,5 @@
 import apiFetch from "../api/api";
+import { clearState } from "./todoAction";
 
 export const login = (email, password) => {
     return async (dispatch) => {
@@ -104,11 +105,21 @@ export const register = (name, email, password, confirmPassword) => {
 export const logout = () => {
     return (dispatch) => {
         localStorage.removeItem("token");
+        // clearing todo state
+        clearState()(dispatch);
         dispatch({
             type: 'LOGOUT',
             payload: {
                 token: null,
             }
+        })
+    }
+}
+
+export const clearError = () => {
+    return (dispatch) => {
+        dispatch({
+            type: 'CLEAR_ERROR',
         })
     }
 }
