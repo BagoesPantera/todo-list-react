@@ -1,24 +1,31 @@
 // this is like middleware
-import { useContext } from "react"
-import { Navigate } from "react-router-dom";
-import AuthContext from "./AuthProvider";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export const ProtectedRoute = ({children}) => {
-    const {token} = useContext(AuthContext);
-
-    if(!token) {
-        return <Navigate to="/login" />
-    }
-
+    
+    const { token } = useSelector(state => state.auth);    
+    const navigate = useNavigate();
+    
+    useEffect( () => {
+        if(!token) {
+            navigate("/login");
+        }
+        
+    }, [token]);
     return children;
 }
 
 export const ProtectedLogin = ({children}) => {
-    const {token} = useContext(AuthContext);
-
-    if(token) {
-        return <Navigate to="/" />
-    }
-
+    const { token } = useSelector(state => state.auth);    
+    const navigate = useNavigate();
+    
+    useEffect( () => {
+        if(token) {
+            navigate("/");
+        }
+        
+    }, [token]);
     return children;
 }

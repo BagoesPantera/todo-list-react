@@ -1,12 +1,13 @@
-import { useState, useEffect, useContext } from "react";
-import apiFetch from "../../api/api";
-import AuthContext from "../../AuthProvider";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
+// actions
+import { addTodo, getTodo, getOneTodo, deleteTodo, updateTodo, clearState } from "../../actions/todoAction";
+import { logout } from "../../actions/authAction";
 
 export default function Home() {
-  
-  const {onLogout} = useContext(AuthContext);
 
-  const [tasks, setTasks] = useState([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
   const [updateId, setUpdateId] = useState("");
@@ -14,109 +15,74 @@ export default function Home() {
   const [updateTaskDescription, setUpdateTaskDescription] = useState("");
   const [showModal, setShowModal] = useState(false);
 
-  async function displayTodo() {
-    try {
-      const response = await apiFetch("/todo", {
-        method: "GET",
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-      });
-      setTasks(response);
-    } catch (error) {
-      console.log(error);
-    }   
-  }
+  // reducers state
+  const { token } = useSelector(state => state.auth);
+  const { response, error, todos, oneTodo } = useSelector(state => state.todo);
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
 
-    displayTodo();
-
-  }, []);
-
-  async function oneTodo(id) {
+    dispatch(getTodo());
     
-    try {
-      const response = await apiFetch("/todo/" + id, {
-        method: "GET",
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-      });
+    if(!token) {
+      navigate("/login");
+    }
+
+    if(oneTodo){
+      setUpdateId(oneTodo.id);
+      setUpdateTaskTitle(oneTodo.title);
+      setUpdateTaskDescription(oneTodo.description);
       setShowModal(true);
-      setUpdateTaskTitle(response.title);
-      setUpdateTaskDescription(response.description);
-      setUpdateId(response.id);
-    } catch (error) {
-      console.log(error);
     }
-  }
 
-  async function addTodo(e) {
+    if(response) {
+      handleClear();
+
+      // adding this causing "Should not already be working." error.
+      //alert(response)
+    }
+
+    if(error) {
+      alert(error);
+    }
+
+  }, [token, response, error, oneTodo]);
+
+  const handleAddTodo = (e) => {
     e.preventDefault();
-    console.log("masuk");
-    try {
-      const response = await apiFetch("/todo/add", {
-        method: "POST",
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-        body: {
-          title: newTaskTitle,
-          description: newTaskDescription,
-        },
-      });
-      console.log(response);
-      setNewTaskTitle("");
-      setNewTaskDescription("");
-      displayTodo();
-    } catch (error) {
-      console.log(error);
-    }
+
+    dispatch(addTodo(newTaskTitle, newTaskDescription));
   }
 
-  async function updateTodo(e, id) {
+  const handleDeleteTodo = (id) => {
+    dispatch(deleteTodo(id));
+  }
+
+  const handleShowModal = (id) => {
+    dispatch(getOneTodo(id));
+  }
+
+  const handleUpdateTodo = (e, id) => {
     e.preventDefault();
-    try {
-      const response = await apiFetch(`/todo/update/${id}`, {
-        method: "POST",
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-        body: {
-          title: updateTaskTitle,
-          description: updateTaskDescription,
-        },
-      });
-      console.log(response);
-      setUpdateTaskTitle("");
-      setUpdateTaskDescription("");
-      setShowModal(false);
-      displayTodo();
-    } catch (error) {
-      console.log(error);
-    }
+
+    dispatch(updateTodo(id, updateTaskTitle, updateTaskDescription));
+    handleClear();
   }
 
-  async function deleteTodo(id) {
-    try {
-      const response = await apiFetch(`/todo/delete/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-      });
-      displayTodo();
-    } catch (error) {
-      console.log(error);
-    }
+  const handleLogout = () => {
+    dispatch(logout())
   }
 
-  function handleCloseModalUpdate() {
-    setShowModal(false);
+  const handleClear = () => {
+    setNewTaskTitle("");
+    setNewTaskDescription("");
     setUpdateId("");
     setUpdateTaskTitle("");
     setUpdateTaskDescription("");
+    setShowModal(false);
+    dispatch(clearState());
   }
 
   return (
@@ -124,7 +90,7 @@ export default function Home() {
       <div className="bg-white rounded shadow p-6 m-4 w-full lg:w-3/4 lg:max-w-lg">
             <div className="mb-4">
                 <h1 className="text-grey-darkest">Todo List</h1>
-                <form className="flex mt-4 flex-col" onSubmit={e => addTodo(e)}>
+                <form className="flex mt-4 flex-col" onSubmit={e => handleAddTodo(e)}>
                     <input className="shadow appearance-none border rounded w-full py-2 px-3 mr-4 text-grey-darker" placeholder="Add Todo" value={newTaskTitle} onChange={e => setNewTaskTitle( e.target.value)}/>
                     <textarea className="shadow appearance-none border rounded w-full py-2 px-3 mr-4 mt-3 text-grey-darker" name="" id="" cols="20" rows="4" placeholder="Description" value={newTaskDescription} onChange={e => setNewTaskDescription(e.target.value)}/>
                     
@@ -134,15 +100,17 @@ export default function Home() {
             <h1 className="text-grey-darkest">Upcoming</h1>
             <div className="divide-y mt-4">
               {/* start */}
-              {tasks.map((task) => (
+              {todos.map((task) => (
                 <div key={task.id} className="flex mb-4 items-center">
                   <div className="flex flex-col">
                      <p className="w-full text-grey-darkest">{task.title}</p>
                     <p className="w-full text-grey-darkest">{task.description}</p>
                   </div>
+                   <div className="flex float-right ml-auto">
+                      <button className="flex-no-shrink p-2 border-2 rounded hover:text-white text-green border-green-600 hover:bg-green-600" onClick={() => handleShowModal(task.id)}>Edit</button>
+                    <button className="flex-no-shrink p-2 ml-2 border-2 rounded text-red border-red-600 hover:text-white hover:bg-red-600" onClick={() => handleDeleteTodo(task.id)}>Remove</button>
+                   </div>
                    
-                    <button className="flex-no-shrink p-2 ml-4 mr-2 border-2 rounded hover:text-white text-green border-green-600 hover:bg-green-600" onClick={() => oneTodo(task.id)}>Edit</button>
-                    <button className="flex-no-shrink p-2 ml-2 border-2 rounded text-red border-red-600 hover:text-white hover:bg-red-600" onClick={() => deleteTodo(task.id)}>Remove</button>
                 </div>
                 ))}
                 {/* end */}
@@ -171,7 +139,7 @@ export default function Home() {
                   </button>
                 </div>
                 {/*body*/}
-                <form className="flex mt-4 flex-col " onSubmit={e => updateTodo(e, updateId)}>
+                <form className="flex mt-4 flex-col " onSubmit={e => handleUpdateTodo(e, updateId)}>
                   <div className="relative p-6 ">
                     
                       <input className="shadow appearance-none border rounded w-full py-2 px-3 mr-4 text-grey-darker" placeholder="Add Todo" value={updateTaskTitle} onChange={e => setUpdateTaskTitle( e.target.value)}/>
@@ -183,7 +151,7 @@ export default function Home() {
                     <button
                       className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
                       type="button"
-                      onClick={handleCloseModalUpdate}
+                      onClick={() => handleClear()}
                     >
                       Close
                     </button>
@@ -205,7 +173,7 @@ export default function Home() {
       
         </div>
         <div className="absolute top-2 right-2 h-16 w-200">
-          <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={onLogout}>
+          <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={() => handleLogout()}>
             Logout
           </button>
         </div>
