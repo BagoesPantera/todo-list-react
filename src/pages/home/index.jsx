@@ -17,9 +17,9 @@ export default function Home() {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [count , setCount] = useState(0);
 
   // reducers state
-  const { token } = useSelector(state => state.auth);
   const { response, error, oneTodo, loading } = useSelector(state => state.todo);
 
   const dispatch = useDispatch();
@@ -27,20 +27,19 @@ export default function Home() {
   useEffect(() => {
 
     oneTodo ? setShowModal(true) : setShowModal(false);
-
-    if(response) {
-      handleClear();
-      swalAlert("info", response)
-    }
-
     loading ? swalLoading() : swalClose();
+    
+    if(response) {
+      swalAlert("info", response, dispatch)
+      handleClear();  
+    }
 
     if(error) {
-      swalAlert("error", error)
+      swalAlert("error", error, dispatch)
       handleClear();
     }
 
-  }, [token, response, error, oneTodo, loading]);
+  }, [response, error, oneTodo, loading]);
 
   const handleAddTodo = (e) => {
     e.preventDefault();
@@ -51,30 +50,31 @@ export default function Home() {
   const handleClear = () => {
     setNewTaskTitle("");
     setNewTaskDescription("");
+    setCount(0);
     setShowModal(false);
-    dispatch(clearState());
   }
 
   return (
-    <div className="h-100 w-full flex flex-col h-screen items-center bg-white font-sans">
+    <div className="h-100 w-full flex flex-col h-screen overflow-y-auto bg-gradient-to-tr from-slate-300 via-slate-200 to-slate-300 items-center bg-white font-sans">
       <div className="bg-white rounded p-6 m-4 w-full lg:w-3/4 lg:max-w-lg">
         <div className="mb-4">
-          <h1 className="text-grey-darkest">Todo List</h1>
+          <h1 className="text-grey-darkest font-bold">Todo List</h1>
           <form className="flex mt-4 flex-col" onSubmit={e => handleAddTodo(e)}>
-              <input className="shadow appearance-none border rounded w-full py-2 px-3 mr-4 text-grey-darker" placeholder="Add Todo" value={newTaskTitle} onChange={e => setNewTaskTitle( e.target.value)}/>
-              <textarea className="shadow appearance-none border rounded w-full py-2 px-3 mr-4 mt-3 text-grey-darker" name="" id="" cols="20" rows="4" placeholder="Description" value={newTaskDescription} onChange={e => setNewTaskDescription(e.target.value)}/>
+              <input className="shadow appearance-none border rounded w-full py-2 px-3 mr-4 text-grey-darker focus:border-blue-600" placeholder="Add Todo" value={newTaskTitle} onChange={e => setNewTaskTitle( e.target.value)}/>
+              <textarea className="form-control shadow block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out mt-3 border-transparent focus:text-gray-700 focus:bg-white focus:border-gray-900 focus:ring-0" name="" id="" cols="20" rows="4" maxLength="255" placeholder="Description" value={newTaskDescription} onChange={e => {setNewTaskDescription(e.target.value); setCount(e.target.value.length)}} required/>
+              <p className="text-right">{count}/255</p>
               <button type="submit" className="flex-no-shrink p-2 w-full mt-3 border-2 mr-4 rounded text-teal border-teal-600 hover:text-white hover:bg-teal-600">Add</button>
           </form>
         </div>
 
         {/* TODOLIST */}
-        <h1 className="text-grey-darkest">Upcoming</h1>
+        <h1 className="text-grey-darkest font-bold">Upcoming</h1>
         <div className="divide-y mt-4">
-          <TodoList></TodoList>
+          <TodoList />
         </div>
-        {showModal ? <UpdateModal></UpdateModal> : null}
+        {showModal ? <UpdateModal /> : null}
       </div>
-      <div className="absolute top-2 right-2 h-16 w-200">
+      <div className="absolute top-2 right-10 h-16 w-200">
         <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={() => dispatch(logout())}>
           Logout
         </button>

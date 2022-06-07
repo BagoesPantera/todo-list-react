@@ -9,6 +9,7 @@ export default function UpdateModal() {
     const [updateId, setUpdateId] = useState("");
     const [updateTaskTitle, setUpdateTaskTitle] = useState("");
     const [updateTaskDescription, setUpdateTaskDescription] = useState("");
+    const [count , setCount] = useState(0);
 
     // reducers state
     const { oneTodo } = useSelector(state => state.todo);
@@ -20,6 +21,7 @@ export default function UpdateModal() {
             setUpdateId(oneTodo.id);
             setUpdateTaskTitle(oneTodo.title);
             setUpdateTaskDescription(oneTodo.description);
+            setCount(oneTodo.description.length);
         }
     }, [ oneTodo ]);
 
@@ -27,15 +29,8 @@ export default function UpdateModal() {
         e.preventDefault();
     
         dispatch(updateTodo(id, updateTaskTitle, updateTaskDescription));
-        handleClear();
-      }
-
-    const handleClear = () => {
         dispatch(clearState());
-        setUpdateId("");
-        setUpdateTaskTitle("");
-        setUpdateTaskDescription("");
-    }
+      }
 
     return (
         <><div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
@@ -51,9 +46,9 @@ export default function UpdateModal() {
                     {/*body*/}
                     <form className="flex mt-4 flex-col " onSubmit={e => handleUpdateTodo(e, updateId)}>
                         <div className="relative p-6 ">
-
-                            <input className="shadow appearance-none border rounded w-full py-s2 px-3 mr-4 text-grey-darker" placeholder="Add Todo" value={updateTaskTitle} onChange={e => setUpdateTaskTitle(e.target.value)} />
-                            <textarea className="shadow appearance-none border rounded w-full py-2 px-3 mr-4 mt-3 text-grey-darker" name="" id="" cols="20" rows="4" placeholder="Description" value={updateTaskDescription} onChange={e => setUpdateTaskDescription(e.target.value)} />
+                            <input className="shadow appearance-none border rounded w-full py-2 px-3 mr-4 text-grey-darker focus:border-blue-600" placeholder="Add Todo" value={updateTaskTitle} onChange={e => setUpdateTaskTitle( e.target.value)}/>
+                            <textarea className="form-control shadow block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out mt-3 border-transparent focus:text-gray-700 focus:bg-white focus:border-gray-900 focus:ring-0" name="" id="" cols="20" rows="4" maxLength="255" placeholder="Description" value={updateTaskDescription} onChange={e => {setUpdateTaskDescription(e.target.value); setCount(e.target.value.length)}} required/>
+                            <p className="text-right">{count}/255</p>
 
                         </div>
                         {/*footer*/}
@@ -61,7 +56,7 @@ export default function UpdateModal() {
                             <button
                                 className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
                                 type="button"
-                                onClick={() => handleClear()}
+                                onClick={() => dispatch(clearState())}
                             >
                                 Close
                             </button>

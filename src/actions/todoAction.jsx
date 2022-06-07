@@ -7,7 +7,7 @@ export const getTodo = () => {
             type: 'GET_TODO',
             payload: {
                 loading: true,
-                todos: [],
+                todos: false,
                 error: false,
             }
         })
@@ -34,8 +34,8 @@ export const getTodo = () => {
                 type: 'GET_TODO',
                 payload: {
                     loading: false,
-                    todos: [],
-                    error: true,
+                    todos: false,
+                    error: err,
                 }
             })
         } 
@@ -118,6 +118,9 @@ export const addTodo = (title, description) => {
             })
             
         } catch (err) {
+            if (typeof err == "object") {
+                err = "All field is required.";
+            }
             dispatch({
                 type: 'ADD_TODO',
                 payload: {

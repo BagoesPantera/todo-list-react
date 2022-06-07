@@ -1,6 +1,8 @@
 import Swal from "sweetalert2";
 import withReactContent from 'sweetalert2-react-content'
 
+import { clearState } from "../actions/todoAction";
+
 // https://github.com/sweetalert2/sweetalert2-react-content#usage-example
 const MySwal = withReactContent(Swal)
 
@@ -15,11 +17,19 @@ export const swalLoading = () => {
     })
 }
 
-export function swalAlert(icon, text) {
+export function swalAlert(icon, text, dispatch) {
+    console.log("masuk alert");
     MySwal.fire({
       icon,
       text,
       heightAuto: false,
+    }).then((result) => {
+        if ( dispatch != undefined ) {
+            if (result.isConfirmed || result.isDismissed || result.isDenied) {
+                dispatch(clearState());
+            }
+        }
+        
     });
 }
 
