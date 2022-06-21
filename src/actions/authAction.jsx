@@ -102,6 +102,28 @@ export const register = (name, email, password, confirmPassword) => {
     }
 }
 
+export const userInfo = () => {
+    return async (dispatch) => {
+        //userInfo
+        try {
+            const response = await apiFetch("/user", {
+                method: "GET",
+                headers: {
+                    Authorization: localStorage.getItem("token"),
+                },
+            });
+            dispatch({
+                type: 'USERINFO',
+                payload: {
+                    userData: response,
+                }
+            })
+        } catch (err) {
+            console.log(err);
+        }
+    }
+}
+
 export const logout = () => {
     return (dispatch) => {
         localStorage.removeItem("token");

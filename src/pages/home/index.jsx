@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 // actions
 import { addTodo } from "../../actions/todoAction";
-import { logout } from "../../actions/authAction";
+import { logout, userInfo } from "../../actions/authAction";
 
 // components
 import TodoList from "../../components/todoList";
@@ -21,6 +21,7 @@ export default function Home() {
 
   // reducers state
   const { response, error, oneTodo, loading } = useSelector(state => state.todo);
+  const { userData } = useSelector(state => state.auth);
 
   const dispatch = useDispatch();
 
@@ -38,6 +39,7 @@ export default function Home() {
       swalAlert("error", error, dispatch)
       handleClear();
     }
+    dispatch(userInfo())
 
   }, [response, error, oneTodo, loading]);
 
@@ -61,7 +63,7 @@ export default function Home() {
           {/* head */}
           <div className="grid grid-cols-2">
             <div className="">
-              <h1 className="text-grey-darkest font-bold">Todo List</h1>
+              <h1 className="text-grey-darkest font-bold">{userData.name}'s Todo List</h1>
             </div>
             <div className="">
               <div className="flex lg:absolute lg:top-2 lg:right-10 h-fit w-200">
