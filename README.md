@@ -2,6 +2,9 @@
 
 This todo list made with React and [Todo App API](https://github.com/BagoesPantera/todo-app-laravel-api)
 
+## Github Page
+https://bagoespantera.github.io/todo-list-react/
+
 ## Customize configuration
 
 See [Vite Configuration Reference](https://vitejs.dev/config/).

@@ -22,7 +22,7 @@ const Register = React.lazy(() => import("./pages/register"));
 // fallback doc : https://17.reactjs.org/docs/concurrent-mode-suspense.html
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename='/todo-list-react/'>
      <Provider store={ store }>
           <Routes>
             <Route path="/" element={ 
