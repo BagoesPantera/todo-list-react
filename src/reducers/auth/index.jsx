@@ -2,6 +2,7 @@ const initialState = {
     loading: false,
     error: false,
     token: localStorage.getItem('token') || null,
+    userData: false,
 }
 
 const authReducer = (state = initialState, action) => { 
@@ -18,6 +19,11 @@ const authReducer = (state = initialState, action) => {
                 ...state,
                 loading: action.payload.loading,
                 error: action.payload.error,
+            }
+        case 'USERINFO':
+            return {
+                ...state,
+                userData: action.payload.userData,
             }
         case 'LOGOUT':
             return {
